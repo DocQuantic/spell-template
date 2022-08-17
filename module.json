@@ -1,5 +1,5 @@
 {
-  "id": "spell-template",
+  "name": "spell-template",
   "title": "Spell Template",
   "description": "A simple module which adds a Place template button on chat cards of items which have a target property.",
   "version": "This is auto replaced",
