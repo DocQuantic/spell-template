@@ -1,9 +1,5 @@
 class SpellTemplate {
     static ID = 'spell-template';
-    
-    static TEMPLATES = {
-      TODOLIST: `modules/${this.ID}/templates/spell-template.hbs`
-    }
 
     static log(force, ...args) {  
         const shouldLog = force || game.modules.get('_dev-mode')?.api?.getPackageDebugValue(this.ID);
@@ -188,32 +184,31 @@ hasArea = false;
 itemID = null;
 
 Hooks.on('renderChatMessage', (ChatMessage, html) => {
+  const message = html.find(`[class="sfrpg chat-card item-card"]`)
+  let itemID = message["0"].dataset.itemId;
+  let actorID = message["0"].dataset.actorId;
 
-    const message = html.find(`[class="sfrpg chat-card item-card"]`)
-    let itemID = message["0"].dataset.itemId;
-    let actorID = message["0"].dataset.actorId;
+  if ( itemID != null ){
+    // find the element which has our logged in user's id
+    const buttons = html.find(`[class="card-buttons"]`);
 
-    if ( itemID != null ){
-      // find the element which has our logged in user's id
-      const buttons = html.find(`[class="card-buttons"]`);
-
-      usedItem = game.actors.get(actorID).items.get(itemID);
-      target = getProperty(usedItem.data, "data.area") || {};
+    usedItem = game.actors.get(actorID).items.get(itemID);
+    target = getProperty(usedItem.data, "data.area") || {};
+  
+    if ( target.shape != ""){
+      // insert a button at the end of this element
+      buttons.append(
+        `<button type='button' class='spell-template-icon-button flex0'>
+          Place Template
+        </button>`
+      );
     
-      if ( target.shape != ""){
-        // insert a button at the end of this element
-        buttons.append(
-          `<button type='button' class='spell-template-icon-button flex0'>
-            Place Template
-          </button>`
-        );
-      
-        // register an event listener for this button
-        html.on('click', '.spell-template-icon-button', (event) => {
-          const template = AbilityTemplate.fromItem(usedItem);
-          template.drawPreview();
-        });
-      itemID = null;
-      }
+      // register an event listener for this button
+      html.on('click', '.spell-template-icon-button', (event) => {
+        const template = AbilityTemplate.fromItem(usedItem);
+        template.drawPreview();
+      });
+    itemID = null;
     }
-  });
+  }
+});
