@@ -5,6 +5,8 @@
   "version": "This is auto replaced",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
+  "minimumCoreVersion": "0.9",
+  "compatibleCoreVersion": "0.9",
   "compatibility": {
     "minimum": 10,
     "verified": 10,
@@ -30,8 +32,14 @@
       "lang": "en",
       "name": "English",
       "path": "languages/en.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "languages/fr.json"
     }
   ],
+  "system": ["sfrpg"],
   "url": "This is auto replaced",
   "manifest": "This is auto replaced",
   "download": "This is auto replaced",
