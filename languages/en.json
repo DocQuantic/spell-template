@@ -1,3 +1,5 @@
 {
-    "MODULE.hello": "hello"
+    "SPELL-TEMPLATE": {
+        "PaceTemplate": "Place a template"
+    }
 }

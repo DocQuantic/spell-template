@@ -18,18 +18,8 @@ class SpellTemplate {
       }
 }
 
-spellAreaShapes = {
-  "": "",
-  "cone": "SFRPG.SpellAreaShapesCone",
-  "cylinder": "SFRPG.SpellAreaShapesCylinder",
-  "line": "SFRPG.SpellAreaShapesLine",
-  "sphere": "SFRPG.SpellAreaShapesSphere",
-  "shapable": "SFRPG.SpellAreaShapesShapable",
-  "other": "SFRPG.SpellAreaShapesOther"
-};
-
 /**
- * A helper class for building MeasuredTemplates for 5e spells and abilities
+ * A helper class for building MeasuredTemplates for spells and abilities (adapted from dnd5e)
  * @extends {MeasuredTemplate}
  */
 class AbilityTemplate extends MeasuredTemplate {
@@ -41,10 +31,33 @@ class AbilityTemplate extends MeasuredTemplate {
    */
   static fromItem(item) {
     const target = getProperty(item.data, "data.area") || {};
-    SpellTemplate.log(true, CONST.MEASURED_TEMPLATE_TYPES);
-    const templateShape = CONFIG.SFRPG.spellAreaShapes[target.shape].toLowerCase();
-    SpellTemplate.log(true, templateShape);
+    let templateShape = CONFIG.SFRPG.spellAreaShapes[target.shape].toLowerCase();
     if ( !templateShape ) return null;
+
+    // Workaround for french translation
+    switch ( templateShape ) {
+      case "cône":
+        templateShape = "cone";
+        break;
+      case "cylindre":
+        templateShape = "cylinder";
+        break;
+      case "sphère":
+        templateShape = "sphere";
+        break;
+      case "ligne":
+        templateShape = "line";
+        break;
+      case "forme":
+        templateShape = "shapable";
+        break;
+      case "autre":
+        templateShape = "other";
+        break;
+      default:
+        break;
+    }
+
     if ( templateShape == "shapable" ) return null;
     if ( templateShape == "other" ) return null;
 
@@ -67,15 +80,12 @@ class AbilityTemplate extends MeasuredTemplate {
       case "cylinder":
         templateData.t = CONST.MEASURED_TEMPLATE_TYPES['CIRCLE'];
         break;
-      case "rect": // 5e rectangular AoEs are always cubes
-        templateData.distance = Math.hypot(target.value, target.value);
-        templateData.width = target.value;
-        templateData.direction = 45;
+      case "sphere":
+        templateData.t = CONST.MEASURED_TEMPLATE_TYPES['CIRCLE'];
         break;
-      case "line": // 5e rays are most commonly 1 square (5 ft) in width
+      case "line":
         templateData.t = 'ray';
         templateData.width = target.width ?? canvas.dimensions.distance;
-        SpellTemplate.log(true, "This is a line");
         break;
       default:
         break;
@@ -173,35 +183,37 @@ class AbilityTemplate extends MeasuredTemplate {
   }
 }
 
-itemID = null;
 actorID = null;
+hasArea = false;
+itemID = null;
 
 Hooks.on('renderChatMessage', (ChatMessage, html) => {
 
-    // find the element which has our logged in user's id
-    const loggedInUserListItem = html.find(`[class="card-buttons"]`)
-  
-    // insert a button at the end of this element
-    loggedInUserListItem.append(
-      `<button type='button' class='spell-template-icon-button flex0'>
-        Place Template
-      </button>`
-    );
-  
-    // register an event listener for this button
-    html.on('click', '.spell-template-icon-button', (event) => {
+    const message = html.find(`[class="sfrpg chat-card item-card"]`)
+    let itemID = message["0"].dataset.itemId;
+    let actorID = message["0"].dataset.actorId;
+
+    if ( itemID != null ){
+      // find the element which has our logged in user's id
+      const buttons = html.find(`[class="card-buttons"]`);
+
       usedItem = game.actors.get(actorID).items.get(itemID);
-      SpellTemplate.log(true, usedItem);
-      const template = AbilityTemplate.fromItem(usedItem);
-      template.drawPreview();
-    });
+      target = getProperty(usedItem.data, "data.area") || {};
+    
+      if ( target.shape != ""){
+        // insert a button at the end of this element
+        buttons.append(
+          `<button type='button' class='spell-template-icon-button flex0'>
+            Place Template
+          </button>`
+        );
+      
+        // register an event listener for this button
+        html.on('click', '.spell-template-icon-button', (event) => {
+          const template = AbilityTemplate.fromItem(usedItem);
+          template.drawPreview();
+        });
+      itemID = null;
+      }
+    }
   });
-
-Hooks.on('renderSpellCastDialog', (SpellCastDialog, html) => {
-  this.itemID = SpellCastDialog.item.data._id;
-});
-
-Hooks.on('renderActorSheetSFRPG', (ActorSheetSFRPGCharacter) => {
-  this.actorID = ActorSheetSFRPGCharacter.actor.data._id;
-  SpellTemplate.log(true, this.actorID);
-});
