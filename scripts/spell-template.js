@@ -71,7 +71,7 @@ class AbilityTemplate extends MeasuredTemplate {
     // Additional type-specific data
     switch ( templateShape ) {
       case "cone":
-        templateData.angle = CONFIG.MeasuredTemplate.defaults.angle;
+        templateData.angle = 90;
         break;
       case "cylinder":
         templateData.t = CONST.MEASURED_TEMPLATE_TYPES['CIRCLE'];
